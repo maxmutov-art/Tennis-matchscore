@@ -1,0 +1,14 @@
+{
+  "name": "tennis-matchscore",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "test": "vitest",
+    "preview": "serve -l 4173 ."
+  },
+  "devDependencies": {
+    "jsdom": "^24.1.0",
+    "serve": "^14.2.3",
+    "vitest": "^1.6.0"
+  }
+}
