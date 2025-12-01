@@ -302,3 +302,79 @@ button.ghost {
         font-size: 20px;
     }
 }
+/* ---------------------------
+   SETUP SCREEN
+---------------------------- */
+.setup-box {
+    background: #11182f;
+    padding: 18px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+}
+
+.setup-box input {
+    display: block;
+    width: 100%;
+    margin: 8px 0;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #222a43;
+    background: #0f1529;
+    color: white;
+}
+
+.setup-box button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 10px;
+    background: #1b2545;
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 10px;
+    color: white;
+}
+
+.hidden {
+    display: none;
+}
+
+/* ---------------------------
+   ATP TABLE
+---------------------------- */
+
+.atp-table {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+}
+
+.atp-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+    background: #11182f;
+    padding: 12px 16px;
+    border-radius: 10px;
+    color: white;
+    align-items: center;
+}
+
+.player-name {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+}
+
+.serve-dot {
+    color: #4BCF47;
+    opacity: 0;
+    font-size: 16px;
+}
+
+.set-score,
+.games-score,
+.points-score {
+    text-align: center;
+    font-size: 20px;
+    font-weight: 600;
+}
+
