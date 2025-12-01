@@ -11,59 +11,70 @@
 
 <div class="container">
 
-    <!-- TITLE -->
-    <h1 class="title">ATP-Style Scoreboard</h1>
+    <h1 class="title">ATP-Style Tennis Scoreboard</h1>
 
-    <!-- SCOREBOARD BOX -->
-    <div class="scoreboard-container">
-        <div class="scoreboard-header">
-            <h2>Match Score</h2>
-            <span id="matchStatus">Match in progress</span>
-        </div>
+    <!-- PLAYER NAME SETUP -->
+    <div class="setup-box">
+        <h3>Enter Player Names</h3>
 
-        <!-- NEW ATP TABLE -->
-        <div class="atp-table">
+        <input type="text" id="nameAInput" placeholder="Player A"
+               oninput="pendingNameA = this.value" />
 
-            <!-- PLAYER A -->
-            <div class="atp-row" id="rowA">
-                <div class="player-name">
-                    <span class="serve-dot" id="serveA">●</span>
-                    <span id="nameA">Player A</span>
-                </div>
+        <input type="text" id="nameBInput" placeholder="Player B"
+               oninput="pendingNameB = this.value" />
 
-                <div class="set-score" id="setA1">0</div>
-                <div class="set-score" id="setA2">-</div>
-
-                <div class="game-score-box" id="gameA">0</div>
-            </div>
-
-            <!-- PLAYER B -->
-            <div class="atp-row" id="rowB">
-                <div class="player-name">
-                    <span class="serve-dot" id="serveB">●</span>
-                    <span id="nameB">Player B</span>
-                </div>
-
-                <div class="set-score" id="setB1">0</div>
-                <div class="set-score" id="setB2">-</div>
-
-                <div class="game-score-box" id="gameB">0</div>
-            </div>
-        </div>
+        <button onclick="startMatch()">Start Match</button>
     </div>
 
-    <!-- CONTROLS -->
-    <div class="controls">
-        <input type="text" placeholder="Player A name" 
-       oninput="changeName('A', this.value)" />
+    <!-- SCOREBOARD -->
+    <div id="scoreboard" class="hidden">
+        <div class="scoreboard-container">
+            <div class="scoreboard-header">
+                <h2>Match Score</h2>
+                <span id="matchStatus">Match in progress</span>
+            </div>
 
-<input type="text" placeholder="Player B name" 
-       oninput="changeName('B', this.value)" />
+            <!-- ATP STYLE TABLE -->
+            <div class="atp-table">
 
-        <button onclick="pointWon('A')">Point Player A</button>
-        <button onclick="pointWon('B')">Point Player B</button>
-        <button onclick="changeServer()">Change Server</button>
-        <button onclick="resetMatch()">Reset Match</button>
+                <!-- PLAYER A -->
+                <div class="atp-row" id="rowA">
+                    <div class="player-name">
+                        <span class="serve-dot" id="serveA">●</span>
+                        <span id="nameA">Player A</span>
+                    </div>
+
+                    <div class="set-score" id="setA1">0</div>
+                    <div class="set-score" id="setA2">-</div>
+
+                    <div class="games-score" id="gamesA">0</div>
+                    <div class="points-score" id="pointsA">0</div>
+                </div>
+
+                <!-- PLAYER B -->
+                <div class="atp-row" id="rowB">
+                    <div class="player-name">
+                        <span class="serve-dot" id="serveB">●</span>
+                        <span id="nameB">Player B</span>
+                    </div>
+
+                    <div class="set-score" id="setB1">0</div>
+                    <div class="set-score" id="setB2">-</div>
+
+                    <div class="games-score" id="gamesB">0</div>
+                    <div class="points-score" id="pointsB">0</div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- CONTROLS -->
+        <div class="controls">
+            <button onclick="pointWon('A')">Point Player A</button>
+            <button onclick="pointWon('B')">Point Player B</button>
+            <button onclick="changeServer()">Change Server</button>
+            <button onclick="resetMatch()">Reset Match</button>
+        </div>
     </div>
 
 </div>
