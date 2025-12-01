@@ -17,15 +17,18 @@
     <div class="setup-box" id="setupBox">
         <h3>Enter Player Names</h3>
 
-        <input type="text" placeholder="Player A" id="nameAInput">
-        <input type="text" placeholder="Player B" id="nameBInput">
+        <input type="text" placeholder="Player A" id="nameAInput" />
+        <input type="text" placeholder="Player B" id="nameBInput" />
 
         <h3>Select Match Type</h3>
+        <label><input type="radio" name="matchType" value="1" checked /> 1 Set (super tiebreak at 6–6)</label><br />
+        <label><input type="radio" name="matchType" value="2" /> 2 Sets (super tiebreak if 1–1)</label><br />
+        <label><input type="radio" name="matchType" value="3" /> Best of 3 Sets</label><br />
+        <label><input type="radio" name="matchType" value="5" /> Best of 5 Sets</label><br />
 
-        <label><input type="radio" name="matchType" value="1" checked> 1 Set (super tiebreak at 6–6)</label><br>
-        <label><input type="radio" name="matchType" value="2"> 2 Sets (super tiebreak if 1–1)</label><br>
-        <label><input type="radio" name="matchType" value="3"> Best of 3 Sets</label><br>
-        <label><input type="radio" name="matchType" value="5"> Best of 5 Sets</label><br><br>
+        <h3>Who serves first?</h3>
+        <label><input type="radio" name="firstServer" value="A" checked /> Player A</label><br />
+        <label><input type="radio" name="firstServer" value="B" /> Player B</label><br /><br />
 
         <button onclick="startMatch()">Start Match</button>
     </div>
@@ -48,9 +51,11 @@
                         <span id="nameA">Player A</span>
                     </div>
 
-                    <div class="set-score" id="setA1">0</div>
+                    <!-- real set scores (games) -->
+                    <div class="set-score" id="setA1">-</div>
                     <div class="set-score" id="setA2">-</div>
 
+                    <!-- current set games + points -->
                     <div class="games-score" id="gamesA">0</div>
                     <div class="points-score" id="pointsA">0</div>
                 </div>
@@ -62,7 +67,7 @@
                         <span id="nameB">Player B</span>
                     </div>
 
-                    <div class="set-score" id="setB1">0</div>
+                    <div class="set-score" id="setB1">-</div>
                     <div class="set-score" id="setB2">-</div>
 
                     <div class="games-score" id="gamesB">0</div>
@@ -74,9 +79,10 @@
 
         <!-- CONTROLS -->
         <div class="controls">
-            <button onclick="pointWon('A')">Point Player A</button>
-            <button onclick="pointWon('B')">Point Player B</button>
-            <button onclick="changeServer()">Change Server</button>
+            <button id="btnPointA" onclick="pointWon('A')">Point Player A</button>
+            <button id="btnPointB" onclick="pointWon('B')">Point Player B</button>
+            <button id="btnAce"    onclick="recordAce()">Ace (server)</button>
+            <button id="btnDf"     onclick="recordDoubleFault()">Double Fault (server)</button>
             <button onclick="undo()">Undo</button>
             <button onclick="resetMatch()">Reset Match</button>
         </div>
