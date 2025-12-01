@@ -54,6 +54,12 @@
 
     <!-- CONTROLS -->
     <div class="controls">
+        <input type="text" placeholder="Player A name" 
+       oninput="changeName('A', this.value)" />
+
+<input type="text" placeholder="Player B name" 
+       oninput="changeName('B', this.value)" />
+
         <button onclick="pointWon('A')">Point Player A</button>
         <button onclick="pointWon('B')">Point Player B</button>
         <button onclick="changeServer()">Change Server</button>
