@@ -377,4 +377,20 @@ button.ghost {
     font-size: 20px;
     font-weight: 600;
 }
+/* MATCH TYPE SETUP */
+.setup-box label {
+    color: #d4ddf8;
+    font-size: 16px;
+}
+
+/* Hide scoreboard on load */
+.hidden {
+    display: none;
+}
+
+/* Undo button highlight */
+.controls button:nth-child(4) {
+    background: #5c0a0a;
+    border-color: rgba(255,255,255,0.15);
+}
 
