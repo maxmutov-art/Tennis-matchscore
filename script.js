@@ -8,19 +8,29 @@ const MAX_SETS = 5;
 
 let playerA = {
     name: "",
-    sets: [0, 0, 0, 0, 0],      // 1 = won set, 0 = lost
-    setScores: [null, null, null, null, null], // games per set (e.g. 6, 1)
+    sets: [0,0,0,0,0],
+    setScores: [null, null, null, null, null],
     games: 0,
-    points: 0
+    points: 0,
+
+    // stats
+    totalPointsWon: 0,
+    aces: 0,
+    doubleFaults: 0
 };
 
 let playerB = {
     name: "",
-    sets: [0, 0, 0, 0, 0],
+    sets: [0,0,0,0,0],
     setScores: [null, null, null, null, null],
     games: 0,
-    points: 0
+    points: 0,
+
+    totalPointsWon: 0,
+    aces: 0,
+    doubleFaults: 0
 };
+
 
 let currentSet = 0;      // index 0 = Set 1
 let currentServer = "A"; // 'A' or 'B'
