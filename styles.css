@@ -226,3 +226,79 @@ button.ghost {
     grid-template-columns: 140px repeat(5, 1fr);
   }
 }
+/* ----------------------------------------------------
+   ATP STYLE SCOREBOARD — FULL VISUAL OVERHAUL
+-----------------------------------------------------*/
+
+.scoreboard-container {
+    background: #0f1529;
+    padding: 22px;
+    border-radius: 14px;
+    box-shadow: 0 0 12px rgba(0,0,0,0.35);
+    margin-bottom: 32px;
+}
+
+.scoreboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #d9e3ff;
+    margin-bottom: 18px;
+}
+
+.atp-table {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+}
+
+.atp-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1.4fr;
+    align-items: center;
+    background: #11182f;
+    padding: 14px 18px;
+    border-radius: 12px;
+    color: #ffffff;
+    font-size: 19px;
+}
+
+.player-name {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+}
+
+.serve-dot {
+    font-size: 16px;
+    color: #4BCF47;
+    opacity: 0; /* hidden unless serving */
+}
+
+.set-score {
+    text-align: center;
+    font-size: 22px;
+    font-weight: 500;
+}
+
+.game-score-box {
+    background: #1b2545;
+    padding: 8px 14px;
+    text-align: center;
+    border-radius: 10px;
+    font-size: 24px;
+    font-weight: 700;
+    color: #ffffff;
+    border: 1px solid rgba(255,255,255,0.18);
+}
+
+/* MOBILE */
+@media (max-width: 480px) {
+    .atp-row {
+        grid-template-columns: 2fr 0.8fr 0.8fr 1fr;
+    }
+    .game-score-box {
+        font-size: 20px;
+    }
+}
