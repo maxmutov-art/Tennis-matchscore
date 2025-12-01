@@ -34,6 +34,38 @@
     </div>
 
     <!-- SCOREBOARD -->
+    <!-- MATCH STATISTICS (hidden until match ends) -->
+<div id="statsBox" class="hidden stats-box">
+    <h2>Match Statistics</h2>
+
+    <table class="stats-table">
+        <thead>
+            <tr>
+                <th>Statistic</th>
+                <th id="statsNameA">Player A</th>
+                <th id="statsNameB">Player B</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Total Points Won</td>
+                <td id="statsPointsA">0</td>
+                <td id="statsPointsB">0</td>
+            </tr>
+            <tr>
+                <td>Aces</td>
+                <td id="statsAcesA">0</td>
+                <td id="statsAcesB">0</td>
+            </tr>
+            <tr>
+                <td>Double Faults</td>
+                <td id="statsDfA">0</td>
+                <td id="statsDfB">0</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
     <div id="scoreboard" class="hidden">
 
         <div class="scoreboard-container">
