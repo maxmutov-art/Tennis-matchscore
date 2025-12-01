@@ -373,28 +373,31 @@ function startSuperTiebreak() {
 // ===============================
 function endMatch(winnerId) {
     matchOver = true;
-    const name = winnerId === "A" ? playerA.name : playerB.name;
-    document.getElementById("matchStatus").textContent = `${name} wins!`;
-function endMatch(winnerId) {
-    matchOver = true;
+
     const winnerName = winnerId === "A" ? playerA.name : playerB.name;
     document.getElementById("matchStatus").textContent = `${winnerName} wins!`;
 
-    // Show statistics
-    document.getElementById("statsBox").classList.remove("hidden");
+    // SHOW STATS BOX
+    const stats = document.getElementById("statsBox");
+    stats.classList.remove("hidden");
+
+    // UPDATE PLAYER NAMES
     document.getElementById("statsNameA").textContent = playerA.name;
     document.getElementById("statsNameB").textContent = playerB.name;
 
+    // UPDATE POINTS WON
     document.getElementById("statsPointsA").textContent = playerA.totalPointsWon;
     document.getElementById("statsPointsB").textContent = playerB.totalPointsWon;
 
+    // UPDATE ACES
     document.getElementById("statsAcesA").textContent = playerA.aces;
     document.getElementById("statsAcesB").textContent = playerB.aces;
 
+    // UPDATE DOUBLE FAULTS
     document.getElementById("statsDfA").textContent = playerA.doubleFaults;
     document.getElementById("statsDfB").textContent = playerB.doubleFaults;
 }
-}
+
 
 function resetMatch() {
     location.reload();
