@@ -1,36 +1,121 @@
-// =====================================================
-// MATCH VARIABLES
-// =====================================================
-let matchType = 1; // 1,2,3,5 sets
-let setsToWin = 1;
+// ===============================
+// MATCH STATE
+// ===============================
+let matchType = 1;    // 1,2,3,5
+let setsToWin = 1;    // 1,2,3
 
-let playerA = { name: "", sets: [0,0,0,0,0], games: 0, points: 0 };
-let playerB = { name: "", sets: [0,0,0,0,0], games: 0, points: 0 };
+const MAX_SETS = 5;
 
-let currentSet = 0;
-let currentServer = "A";
+let playerA = {
+    name: "",
+    sets: [0, 0, 0, 0, 0],      // 1 = won set, 0 = lost
+    setScores: [null, null, null, null, null], // games per set (e.g. 6, 1)
+    games: 0,
+    points: 0
+};
+
+let playerB = {
+    name: "",
+    sets: [0, 0, 0, 0, 0],
+    setScores: [null, null, null, null, null],
+    games: 0,
+    points: 0
+};
+
+let currentSet = 0;      // index 0 = Set 1
+let currentServer = "A"; // 'A' or 'B'
 
 let inTiebreak = false;
 let inSuperTiebreak = false;
+let matchOver = false;
 
 const pointLabels = ["0", "15", "30", "40", "Ad"];
 
-let history = []; // For undo
+let history = []; // for undo
 
 
-// =====================================================
+// ===============================
+// HELPERS
+// ===============================
+function cloneState() {
+    return JSON.stringify({
+        matchType,
+        setsToWin,
+        playerA,
+        playerB,
+        currentSet,
+        currentServer,
+        inTiebreak,
+        inSuperTiebreak,
+        matchOver
+    });
+}
+
+function restoreState(snapshot) {
+    const s = JSON.parse(snapshot);
+    matchType = s.matchType;
+    setsToWin = s.setsToWin;
+    playerA = s.playerA;
+    playerB = s.playerB;
+    currentSet = s.currentSet;
+    currentServer = s.currentServer;
+    inTiebreak = s.inTiebreak;
+    inSuperTiebreak = s.inSuperTiebreak;
+    matchOver = s.matchOver;
+}
+
+function otherPlayer(id) {
+    return id === "A" ? "B" : "A";
+}
+
+function countSetsWon(player) {
+    return player.sets.reduce((acc, v) => acc + (v ? 1 : 0), 0);
+}
+
+function saveState() {
+    history.push(cloneState());
+}
+
+
+// ===============================
 // START MATCH
-// =====================================================
+// ===============================
 function startMatch() {
     playerA.name = document.getElementById("nameAInput").value || "Player A";
     playerB.name = document.getElementById("nameBInput").value || "Player B";
 
-    matchType = parseInt(document.querySelector("input[name='matchType']:checked").value);
+    // match type
+    matchType = parseInt(
+        document.querySelector("input[name='matchType']:checked").value,
+        10
+    );
 
     if (matchType === 1) setsToWin = 1;
-    if (matchType === 2) setsToWin = 2; 
-    if (matchType === 3) setsToWin = 2;
-    if (matchType === 5) setsToWin = 3;
+    else if (matchType === 2) setsToWin = 2;
+    else if (matchType === 3) setsToWin = 2;
+    else if (matchType === 5) setsToWin = 3;
+
+    // first server
+    currentServer = document.querySelector(
+        "input[name='firstServer']:checked"
+    ).value;
+
+    // reset whole match state (на всякий случай)
+    playerA.sets = [0, 0, 0, 0, 0];
+    playerA.setScores = [null, null, null, null, null];
+    playerA.games = 0;
+    playerA.points = 0;
+
+    playerB.sets = [0, 0, 0, 0, 0];
+    playerB.setScores = [null, null, null, null, null];
+    playerB.games = 0;
+    playerB.points = 0;
+
+    currentSet = 0;
+    inTiebreak = false;
+    inSuperTiebreak = false;
+    matchOver = false;
+    history = [];
 
     document.getElementById("setupBox").classList.add("hidden");
     document.getElementById("scoreboard").classList.remove("hidden");
@@ -39,243 +124,278 @@ function startMatch() {
 }
 
 
-// =====================================================
-// POINT WON
-// =====================================================
-function pointWon(player) {
-    saveState(); // for undo
+// ===============================
+// POINT WON (normal, ace, double fault)
+// ===============================
+function pointWon(playerId) {
+    if (matchOver) return;
 
-    let p = player === "A" ? playerA : playerB;
-    let o = player === "A" ? playerB : playerA;
+    saveState();
 
-    // SUPER TIEBREAK LOGIC
     if (inSuperTiebreak) {
-        p.points++;
-        checkSuperTiebreak(player);
+        superTiebreakPoint(playerId);
         updateUI();
         return;
     }
 
-    // STANDARD TIEBREAK LOGIC
     if (inTiebreak) {
-        p.points++;
-        checkTiebreak(player);
+        tiebreakPoint(playerId);
         updateUI();
         return;
     }
 
-    // NORMAL POINTS
-    if (p.points <= 2) {
-        p.points++;
-    } else if (p.points === 3) {
-        if (o.points < 3) {
-            winGame(player);
-            return;
-        }
-        if (o.points === 3) {
-            p.points = 4; // AD
-        } else if (o.points === 4) {
-            o.points = 3; // Back to deuce
-        }
-    } else if (p.points === 4) {
-        winGame(player);
-        return;
-    }
-
+    normalPoint(playerId);
     updateUI();
 }
 
+// обычное очко (15–30–40–Ad)
+function normalPoint(playerId) {
+    const p = playerId === "A" ? playerA : playerB;
+    const o = playerId === "A" ? playerB : playerA;
 
-// =====================================================
-// GAME WIN
-// =====================================================
-function winGame(player) {
-    let p = player === "A" ? playerA : playerB;
-    let o = player === "A" ? playerB : playerA;
+    if (p.points <= 2) {
+        p.points++; // 0->15->30->40
+    } else if (p.points === 3) {
+        if (o.points < 3) {
+            // 40 vs <=30 => гейм
+            winGame(playerId);
+            return;
+        }
+        if (o.points === 3) {
+            // deuce -> advantage
+            p.points = 4;
+        } else if (o.points === 4) {
+            // opponent Ad -> back to deuce
+            o.points = 3;
+        }
+    } else if (p.points === 4) {
+        // Ad -> game
+        winGame(playerId);
+        return;
+    }
+}
+
+// стандартный тай-брейк до 7
+function tiebreakPoint(playerId) {
+    const p = playerId === "A" ? playerA : playerB;
+    const o = playerId === "A" ? playerB : playerA;
+
+    p.points++;
+
+    if (p.points >= 7 && p.points - o.points >= 2) {
+        winSet(playerId, "tiebreak");
+    }
+}
+
+// супер-тай-брейк до 10
+function superTiebreakPoint(playerId) {
+    const p = playerId === "A" ? playerA : playerB;
+    const o = playerId === "A" ? playerB : playerA;
+
+    p.points++;
+
+    if (p.points >= 10 && p.points - o.points >= 2) {
+        winSet(playerId, "supertiebreak");
+    }
+}
+
+
+// ===============================
+// ACE / DOUBLE FAULT (for current server)
+// ===============================
+function recordAce() {
+    if (matchOver) return;
+    pointWon(currentServer);
+}
+
+function recordDoubleFault() {
+    if (matchOver) return;
+    const receiver = otherPlayer(currentServer);
+    pointWon(receiver);
+}
+
+
+// ===============================
+// GAME & SET LOGIC
+// ===============================
+function winGame(playerId) {
+    const p = playerId === "A" ? playerA : playerB;
+    const o = playerId === "A" ? playerB : playerA;
 
     p.games++;
-
     playerA.points = 0;
     playerB.points = 0;
 
-    // TIEBREAK CHECK
+    // 6–6 -> решаем, что делать
     if (p.games === 6 && o.games === 6) {
-        if (matchType === 1) {
+        // 1 set -> сразу супер-тай-брейк
+        if (matchType === 1 && currentSet === 0) {
             startSuperTiebreak();
             return;
         }
 
-        if (matchType === 2 && currentSet === 1 && playerA.sets[0] === 1 && playerB.sets[0] === 1) {
-            startSuperTiebreak();
-            return;
-        }
-
+        // 2 sets, счёт по сетам 1–1 => супер-тай как отдельный "сет"
+        // (делаем классический тай в этом сете, супер будет потом)
+        // остальные случаи — обычный тай-брейк
         startTiebreak();
         return;
     }
 
-    // SET WIN
+    // обычное окончание сета (6:x или 7:x)
     if (
         (p.games >= 6 && p.games - o.games >= 2) ||
         p.games === 7
     ) {
-        winSet(player);
+        winSet(playerId, "normal");
         return;
     }
 
-    updateUI();
+    // следующий гейм — другой подающий
+    currentServer = otherPlayer(currentServer);
 }
 
+function winSet(playerId, mode) {
+    const winner = playerId === "A" ? playerA : playerB;
+    const loser  = playerId === "A" ? playerB : playerA;
 
-// =====================================================
-// SET WIN
-// =====================================================
-function winSet(player) {
-    let p = player === "A" ? playerA : playerB;
+    let gamesA = playerA.games;
+    let gamesB = playerB.games;
 
-    p.sets[currentSet] = 1;
+    // если это тай-брейк,winner получает +1 гейм (7–6)
+    if (mode === "tiebreak") {
+        if (playerId === "A") {
+            gamesA = playerA.games + 1;
+            gamesB = playerB.games;
+        } else {
+            gamesB = playerB.games + 1;
+            gamesA = playerA.games;
+        }
+    }
 
+    // супер-тайбрейк — пишем реальные очки (10–8 и т.п.)
+    if (mode === "supertiebreak") {
+        gamesA = playerA.points;
+        gamesB = playerB.points;
+    }
+
+    // сохраняем счёт по геймам в этом сете
+    playerA.setScores[currentSet] = gamesA;
+    playerB.setScores[currentSet] = gamesB;
+
+    // отмечаем, кто выиграл сет
+    if (gamesA > gamesB) {
+        playerA.sets[currentSet] = 1;
+        playerB.sets[currentSet] = 0;
+    } else if (gamesB > gamesA) {
+        playerB.sets[currentSet] = 1;
+        playerA.sets[currentSet] = 0;
+    }
+
+    // обнуляем игры/очки
     playerA.games = 0;
     playerB.games = 0;
-
-    currentSet++;
+    playerA.points = 0;
+    playerB.points = 0;
 
     inTiebreak = false;
     inSuperTiebreak = false;
 
-    if (countSets(playerA) === setsToWin) {
+    // проверяем матч
+    const setsA = countSetsWon(playerA);
+    const setsB = countSetsWon(playerB);
+
+    if (setsA >= setsToWin) {
         endMatch("A");
         return;
     }
-    if (countSets(playerB) === setsToWin) {
+    if (setsB >= setsToWin) {
         endMatch("B");
         return;
     }
 
-    updateUI();
+    // готовимся к следующему сету
+    currentSet++;
+    // подающий на следующий гейм — просто чередуем (упрощённый вариант)
+    currentServer = otherPlayer(currentServer);
 }
 
-
-// =====================================================
-// TIEBREAK START
-// =====================================================
 function startTiebreak() {
     inTiebreak = true;
+    inSuperTiebreak = false;
     playerA.points = 0;
     playerB.points = 0;
-    updateUI();
 }
 
-function checkTiebreak(player) {
-    let p = player === "A" ? playerA : playerB;
-    let o = player === "A" ? playerB : playerA;
-
-    if (p.points >= 7 && p.points - o.points >= 2) {
-        winSet(player);
-    }
-}
-
-
-// =====================================================
-// SUPER TIEBREAK
-// =====================================================
 function startSuperTiebreak() {
     inSuperTiebreak = true;
+    inTiebreak = false;
     playerA.points = 0;
     playerB.points = 0;
-    updateUI();
-}
-
-function checkSuperTiebreak(player) {
-    let p = player === "A" ? playerA : playerB;
-    let o = player === "A" ? playerB : playerA;
-
-    if (p.points >= 10 && p.points - o.points >= 2) {
-        winSet(player);
-    }
 }
 
 
-// =====================================================
-// END MATCH
-// =====================================================
-function endMatch(player) {
-    document.getElementById("matchStatus").textContent =
-        player === "A" ? `${playerA.name} wins!` : `${playerB.name} wins!`;
-}
-
-
-// =====================================================
-// UNDO
-// =====================================================
-function saveState() {
-    history.push(JSON.stringify({
-        playerA: JSON.parse(JSON.stringify(playerA)),
-        playerB: JSON.parse(JSON.stringify(playerB)),
-        currentSet,
-        currentServer,
-        inTiebreak,
-        inSuperTiebreak
-    }));
-}
-
-function undo() {
-    if (history.length === 0) return;
-
-    let prev = JSON.parse(history.pop());
-
-    playerA = prev.playerA;
-    playerB = prev.playerB;
-    currentSet = prev.currentSet;
-    currentServer = prev.currentServer;
-    inTiebreak = prev.inTiebreak;
-    inSuperTiebreak = prev.inSuperTiebreak;
-
-    updateUI();
-}
-
-
-// =====================================================
-// UI UPDATE
-// =====================================================
-function updateUI() {
-    document.getElementById("nameA").textContent = playerA.name;
-    document.getElementById("nameB").textContent = playerB.name;
-
-    document.getElementById("setA1").textContent = playerA.sets[0] ? 1 : 0;
-    document.getElementById("setA2").textContent = playerA.sets[1] ? 1 : "-";
-
-    document.getElementById("setB1").textContent = playerB.sets[0] ? 1 : 0;
-    document.getElementById("setB2").textContent = playerB.sets[1] ? 1 : "-";
-
-    document.getElementById("gamesA").textContent = playerA.games;
-    document.getElementById("gamesB").textContent = playerB.games;
-
-    document.getElementById("pointsA").textContent =
-        inTiebreak || inSuperTiebreak ? playerA.points : pointLabels[playerA.points];
-
-    document.getElementById("pointsB").textContent =
-        inTiebreak || inSuperTiebreak ? playerB.points : pointLabels[playerB.points];
-
-    document.getElementById("serveA").style.opacity =
-        currentServer === "A" ? 1 : 0;
-    document.getElementById("serveB").style.opacity =
-        currentServer === "B" ? 1 : 0;
-}
-
-
-// =====================================================
-// HELPERS
-// =====================================================
-function countSets(player) {
-    return player.sets.reduce((a,b) => a + (b ? 1 : 0), 0);
-}
-
-function changeServer() {
-    currentServer = currentServer === "A" ? "B" : "A";
-    updateUI();
+// ===============================
+// END / RESET / UNDO
+// ===============================
+function endMatch(winnerId) {
+    matchOver = true;
+    const name = winnerId === "A" ? playerA.name : playerB.name;
+    document.getElementById("matchStatus").textContent = `${name} wins!`;
 }
 
 function resetMatch() {
     location.reload();
+}
+
+function undo() {
+    if (history.length === 0) return;
+    const snapshot = history.pop();
+    restoreState(snapshot);
+    updateUI();
+}
+
+
+// ===============================
+// UI UPDATE
+// ===============================
+function updateUI() {
+    // names
+    document.getElementById("nameA").textContent = playerA.name;
+    document.getElementById("nameB").textContent = playerB.name;
+
+    // кнопки с именами
+    document.getElementById("btnPointA").textContent = `Point ${playerA.name}`;
+    document.getElementById("btnPointB").textContent = `Point ${playerB.name}`;
+
+    // set scores (реальные счёты геймов, например 6–1)
+    document.getElementById("setA1").textContent =
+        playerA.setScores[0] != null ? playerA.setScores[0] : "-";
+    document.getElementById("setA2").textContent =
+        playerA.setScores[1] != null ? playerA.setScores[1] : "-";
+
+    document.getElementById("setB1").textContent =
+        playerB.setScores[0] != null ? playerB.setScores[0] : "-";
+    document.getElementById("setB2").textContent =
+        playerB.setScores[1] != null ? playerB.setScores[1] : "-";
+
+    // current games
+    document.getElementById("gamesA").textContent = playerA.games;
+    document.getElementById("gamesB").textContent = playerB.games;
+
+    // points (в тай-брейке показываем 0–1–2… вместо 15–30–40)
+    document.getElementById("pointsA").textContent =
+        inTiebreak || inSuperTiebreak
+            ? playerA.points
+            : pointLabels[playerA.points];
+
+    document.getElementById("pointsB").textContent =
+        inTiebreak || inSuperTiebreak
+            ? playerB.points
+            : pointLabels[playerB.points];
+
+    // server indicator
+    document.getElementById("serveA").style.opacity =
+        currentServer === "A" ? 1 : 0;
+    document.getElementById("serveB").style.opacity =
+        currentServer === "B" ? 1 : 0;
 }
