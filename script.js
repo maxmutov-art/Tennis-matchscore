@@ -163,27 +163,43 @@ function normalPoint(playerId) {
     const p = playerId === "A" ? playerA : playerB;
     const o = playerId === "A" ? playerB : playerA;
 
+    // === POINT WON STATISTIC ===
+    p.totalPointsWon++;
+
+    // 0 → 15 → 30 → 40
     if (p.points <= 2) {
-        p.points++; // 0->15->30->40
-    } else if (p.points === 3) {
+        p.points++; 
+        return;
+    }
+
+    // p is at 40
+    if (p.points === 3) {
         if (o.points < 3) {
-            // 40 vs <=30 => гейм
+            // 40 vs <=30 → game
             winGame(playerId);
             return;
         }
+
         if (o.points === 3) {
-            // deuce -> advantage
+            // 40–40 (deuce) → advantage
             p.points = 4;
-        } else if (o.points === 4) {
-            // opponent Ad -> back to deuce
-            o.points = 3;
+            return;
         }
-    } else if (p.points === 4) {
-        // Ad -> game
+
+        if (o.points === 4) {
+            // opponent has AD → back to deuce
+            o.points = 3;
+            return;
+        }
+    }
+
+    // p has AD → wins game
+    if (p.points === 4) {
         winGame(playerId);
         return;
     }
 }
+
 
 // стандартный тай-брейк до 7
 function tiebreakPoint(playerId) {
@@ -215,14 +231,22 @@ function superTiebreakPoint(playerId) {
 // ===============================
 function recordAce() {
     if (matchOver) return;
+    saveState();
+    const p = currentServer === "A" ? playerA : playerB;
+    p.aces++;
     pointWon(currentServer);
 }
 
+
 function recordDoubleFault() {
     if (matchOver) return;
-    const receiver = otherPlayer(currentServer);
-    pointWon(receiver);
+    saveState();
+    const p = currentServer === "A" ? playerA : playerB;
+    const receiver = currentServer === "A" ? playerB : playerA;
+    p.doubleFaults++;
+    pointWon(receiver === playerA ? "A" : "B");
 }
+
 
 
 // ===============================
@@ -351,6 +375,25 @@ function endMatch(winnerId) {
     matchOver = true;
     const name = winnerId === "A" ? playerA.name : playerB.name;
     document.getElementById("matchStatus").textContent = `${name} wins!`;
+function endMatch(winnerId) {
+    matchOver = true;
+    const winnerName = winnerId === "A" ? playerA.name : playerB.name;
+    document.getElementById("matchStatus").textContent = `${winnerName} wins!`;
+
+    // Show statistics
+    document.getElementById("statsBox").classList.remove("hidden");
+    document.getElementById("statsNameA").textContent = playerA.name;
+    document.getElementById("statsNameB").textContent = playerB.name;
+
+    document.getElementById("statsPointsA").textContent = playerA.totalPointsWon;
+    document.getElementById("statsPointsB").textContent = playerB.totalPointsWon;
+
+    document.getElementById("statsAcesA").textContent = playerA.aces;
+    document.getElementById("statsAcesB").textContent = playerB.aces;
+
+    document.getElementById("statsDfA").textContent = playerA.doubleFaults;
+    document.getElementById("statsDfB").textContent = playerB.doubleFaults;
+}
 }
 
 function resetMatch() {
