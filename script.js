@@ -1,52 +1,52 @@
-// -------------------------
+// =======================================
 // MATCH STATE
-// -------------------------
-let playerA = { name: "Miles", sets: [0, 0], games: 0, points: 0 };
-let playerB = { name: "Leo",   sets: [0, 0], games: 0, points: 0 };
+// =======================================
+let pendingNameA = "";
+let pendingNameB = "";
+
+let playerA = { name: "", sets: [0, 0], games: 0, points: 0 };
+let playerB = { name: "", sets: [0, 0], games: 0, points: 0 };
 
 let currentServer = "A";
 
-// STANDARD TENNIS POINTS
 const pointLabels = ["0", "15", "30", "40", "Ad"];
 
-// -------------------------
-// NAME CHANGE
-// -------------------------
-function changeName(player, newName) {
-    if (player === "A") playerA.name = newName;
-    if (player === "B") playerB.name = newName;
+// =======================================
+// START MATCH (names locked)
+// =======================================
+function startMatch() {
+    playerA.name = pendingNameA || "Player A";
+    playerB.name = pendingNameB || "Player B";
+
+    document.getElementById("nameA").textContent = playerA.name;
+    document.getElementById("nameB").textContent = playerB.name;
+
+    document.querySelector(".setup-box").classList.add("hidden");
+    document.getElementById("scoreboard").classList.remove("hidden");
+
     updateUI();
 }
 
-// -------------------------
-// POINT WON LOGIC
-// -------------------------
+// =======================================
+// POINT WON
+// =======================================
 function pointWon(player) {
     let p = player === "A" ? playerA : playerB;
     let o = player === "A" ? playerB : playerA;
 
-    // NORMAL POINT PROGRESSION
     if (p.points <= 2) {
-        p.points++; // 0 → 15 → 30 → 40
-    } 
-    else if (p.points === 3) {
-        // They are at 40
+        p.points++;
+    } else if (p.points === 3) {
         if (o.points < 3) {
-            // Opponent < 40 → GAME
             winGame(player);
             return;
         }
         if (o.points === 3) {
-            // 40–40 → Deuce → AD
             p.points = 4; // AD
-        } 
-        else if (o.points === 4) {
-            // Opponent has AD → back to deuce
-            o.points = 3;
+        } else if (o.points === 4) {
+            o.points = 3; // back to deuce
         }
-    } 
-    else if (p.points === 4) {
-        // They already have AD → GAME
+    } else if (p.points === 4) {
         winGame(player);
         return;
     }
@@ -54,90 +54,84 @@ function pointWon(player) {
     updateUI();
 }
 
-// -------------------------
-// WIN GAME → UPDATE SET
-// -------------------------
+// =======================================
+// WIN GAME
+// =======================================
 function winGame(player) {
     let p = player === "A" ? playerA : playerB;
     let o = player === "A" ? playerB : playerA;
 
     p.games++;
 
-    // Reset points
     playerA.points = 0;
     playerB.points = 0;
 
-    // CHECK SET WIN
+    // Check set win
     if (
-        (p.games >= 6 && p.games - o.games >= 2) || // 6–0 to 6–4
-        p.games === 7                              // 7–5 or 7–6
+        (p.games >= 6 && p.games - o.games >= 2) ||
+        p.games === 7
     ) {
         winSet(player);
+        return;
     }
 
     updateUI();
 }
 
-// -------------------------
+// =======================================
 // WIN SET
-// -------------------------
+// =======================================
 function winSet(player) {
     let p = player === "A" ? playerA : playerB;
 
-    // Increase set
     if (p.sets[0] === 0) p.sets[0] = 1;
     else p.sets[1] = 1;
 
-    // Reset games
     playerA.games = 0;
     playerB.games = 0;
 
-    // Reset points
-    playerA.points = 0;
-    playerB.points = 0;
+    updateUI();
 }
 
-// -------------------------
+// =======================================
 // CHANGE SERVER
-// -------------------------
+// =======================================
 function changeServer() {
     currentServer = currentServer === "A" ? "B" : "A";
     updateUI();
 }
 
-// -------------------------
+// =======================================
 // RESET MATCH
-// -------------------------
+// =======================================
 function resetMatch() {
-    playerA = { name: "Miles", sets: [0, 0], games: 0, points: 0 };
-    playerB = { name: "Leo",   sets: [0, 0], games: 0, points: 0 };
-    currentServer = "A";
-    updateUI();
+    location.reload();
 }
 
-// -------------------------
-// UI UPDATE
-// -------------------------
+// =======================================
+// UPDATE UI
+// =======================================
 function updateUI() {
     // Names
     document.getElementById("nameA").textContent = playerA.name;
     document.getElementById("nameB").textContent = playerB.name;
 
-    // Set scores
+    // Sets
     document.getElementById("setA1").textContent = playerA.sets[0] || "-";
     document.getElementById("setA2").textContent = playerA.sets[1] || "-";
 
     document.getElementById("setB1").textContent = playerB.sets[0] || "-";
     document.getElementById("setB2").textContent = playerB.sets[1] || "-";
 
-    // Game scores
-    document.getElementById("gameA").textContent = pointLabels[playerA.points];
-    document.getElementById("gameB").textContent = pointLabels[playerB.points];
+    // Games
+    document.getElementById("gamesA").textContent = playerA.games;
+    document.getElementById("gamesB").textContent = playerB.games;
 
-    // SERVER DOT
+    // Points
+    document.getElementById("pointsA").textContent = pointLabels[playerA.points];
+    document.getElementById("pointsB").textContent = pointLabels[playerB.points];
+
+    // Server indicator
     document.getElementById("serveA").style.opacity = currentServer === "A" ? 1 : 0;
     document.getElementById("serveB").style.opacity = currentServer === "B" ? 1 : 0;
 }
-
-// Initial load
-updateUI();
