@@ -1,97 +1,67 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tennis Match Score</title>
-  <link rel="stylesheet" href="styles.css" />
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tennis Match Scoreboard</title>
+    <link rel="stylesheet" href="styles.css" />
 </head>
+
 <body>
-  <div class="page">
-    <header>
-      <h1>Tennis Match Scoreboard</h1>
-      <p class="subtitle">Singles match tracker with statistics and chart</p>
-    </header>
 
-    <section class="card" id="setup">
-      <h2>Match Setup</h2>
-      <div class="form-grid">
-        <label>
-          Player 1 Name
-          <input id="player1" type="text" placeholder="Player 1" />
-        </label>
-        <label>
-          Player 2 Name
-          <input id="player2" type="text" placeholder="Player 2" />
-        </label>
-        <label>
-          Initial Server
-          <select id="server">
-            <option value="0">Player 1</option>
-            <option value="1">Player 2</option>
-          </select>
-        </label>
-        <label>
-          Number of Sets
-          <select id="sets">
-            <option value="1">1 (super tiebreak at 6-6)</option>
-            <option value="2">2 (super tiebreak at 1-1)</option>
-            <option value="3">3</option>
-            <option value="5">5</option>
-          </select>
-        </label>
-      </div>
-      <button id="start" class="primary">Start Match</button>
-    </section>
+<div class="container">
 
-    <section class="card" id="scoreboard" aria-live="polite">
-      <div class="scoreboard-header">
-        <h2>ATP-Style Scoreboard</h2>
-        <div id="match-status" class="status"></div>
-      </div>
-      <div class="score-table" id="score-table"></div>
-      <div class="points" id="current-points"></div>
-      <div class="controls">
-        <button id="p1-point" disabled>Point: <span class="name" id="p1-name">Player 1</span></button>
-        <button id="p2-point" disabled>Point: <span class="name" id="p2-name">Player 2</span></button>
-        <button id="ace" disabled>Ace</button>
-        <button id="double-fault" disabled>Double Fault</button>
-        <button id="undo" class="ghost" disabled>Undo</button>
-      </div>
-    </section>
+    <!-- TITLE -->
+    <h1 class="title">ATP-Style Scoreboard</h1>
 
-    <section class="card" id="statistics">
-      <h2>Match Statistics</h2>
-      <div class="stats-grid">
-        <div>
-          <h3 id="stat-p1-name">Player 1</h3>
-          <ul>
-            <li>Points Won: <span id="p1-points">0</span></li>
-            <li>Aces: <span id="p1-aces">0</span></li>
-            <li>Double Faults: <span id="p1-df">0</span></li>
-          </ul>
+    <!-- SCOREBOARD BOX -->
+    <div class="scoreboard-container">
+        <div class="scoreboard-header">
+            <h2>Match Score</h2>
+            <span id="matchStatus">Match in progress</span>
         </div>
-        <div>
-          <h3 id="stat-p2-name">Player 2</h3>
-          <ul>
-            <li>Points Won: <span id="p2-points">0</span></li>
-            <li>Aces: <span id="p2-aces">0</span></li>
-            <li>Double Faults: <span id="p2-df">0</span></li>
-          </ul>
+
+        <!-- NEW ATP TABLE -->
+        <div class="atp-table">
+
+            <!-- PLAYER A -->
+            <div class="atp-row" id="rowA">
+                <div class="player-name">
+                    <span class="serve-dot" id="serveA">●</span>
+                    <span id="nameA">Player A</span>
+                </div>
+
+                <div class="set-score" id="setA1">0</div>
+                <div class="set-score" id="setA2">-</div>
+
+                <div class="game-score-box" id="gameA">0</div>
+            </div>
+
+            <!-- PLAYER B -->
+            <div class="atp-row" id="rowB">
+                <div class="player-name">
+                    <span class="serve-dot" id="serveB">●</span>
+                    <span id="nameB">Player B</span>
+                </div>
+
+                <div class="set-score" id="setB1">0</div>
+                <div class="set-score" id="setB2">-</div>
+
+                <div class="game-score-box" id="gameB">0</div>
+            </div>
         </div>
-      </div>
-    </section>
+    </div>
 
-    <section class="card" id="chart-card">
-      <div class="chart-header">
-        <h2>Point Progression</h2>
-        <p class="helper">Available after the match ends</p>
-      </div>
-      <canvas id="progression-chart" aria-label="Point progression chart"></canvas>
-    </section>
-  </div>
+    <!-- CONTROLS -->
+    <div class="controls">
+        <button onclick="pointWon('A')">Point Player A</button>
+        <button onclick="pointWon('B')">Point Player B</button>
+        <button onclick="changeServer()">Change Server</button>
+        <button onclick="resetMatch()">Reset Match</button>
+    </div>
 
-  <script src="script.js"></script>
+</div>
+
+<script src="script.js"></script>
 </body>
 </html>
