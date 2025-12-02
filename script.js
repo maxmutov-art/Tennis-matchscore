@@ -551,7 +551,7 @@ function drawMomentumGraph() {
 
     ctx.clearRect(0, 0, W, H);
 
-    // Baseline (0 momentum)
+    // Базовая линия (0 по моментуму)
     ctx.strokeStyle = "rgba(255,255,255,0.35)";
     ctx.lineWidth = 1;
     ctx.beginPath();
@@ -559,23 +559,22 @@ function drawMomentumGraph() {
     ctx.lineTo(W, mid);
     ctx.stroke();
 
-    if (momentumEvents.length === 0) return;
+    if (!momentumEvents || momentumEvents.length === 0) return;
 
     const n = momentumEvents.length;
     const stepX = n > 1 ? W / (n - 1) : 0;
 
-    // collect cumulative values
+    // значения моментума
     const values = momentumEvents.map(e => e.cumulative);
     const maxAbs = Math.max(
         1,
         Math.abs(Math.min(...values)),
         Math.abs(Math.max(...values))
     );
-    const scaleY = (H * 0.4) / maxAbs; // 40% of height for max
+    const scaleY = (H * 0.4) / maxAbs; // максимум 40% высоты
 
-    // draw segments
+    // ==== 1) Ломаная линия (зелёная / красная) ====
     ctx.lineWidth = 2;
-
     for (let i = 1; i < n; i++) {
         const prev = momentumEvents[i - 1];
         const curr = momentumEvents[i];
@@ -585,7 +584,7 @@ function drawMomentumGraph() {
         const x2 = i * stepX;
         const y2 = mid - curr.cumulative * scaleY;
 
-        // red segment for double fault, green otherwise
+        // красный сегмент, если очко – двойная ошибка, иначе зелёный
         ctx.strokeStyle = curr.type === "df" ? "#ff4444" : "#4BCF47";
 
         ctx.beginPath();
@@ -594,9 +593,21 @@ function drawMomentumGraph() {
         ctx.stroke();
     }
 
-    // draw Ace markers ("A" in yellow)
+    // ==== 2) Белые точки на КАЖДЫЙ розыгрыш ====
+    ctx.fillStyle = "#ffffff";
+    for (let i = 0; i < n; i++) {
+        const ev = momentumEvents[i];
+        const x = i * stepX;
+        const y = mid - ev.cumulative * scaleY;
+
+        ctx.beginPath();
+        ctx.arc(x, y, 2, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    // ==== 3) Метки Ace ("A" жёлтым) ====
     ctx.font = "bold 12px system-ui";
-    ctx.fillStyle = "#ffd447"; // yellow
+    ctx.fillStyle = "#ffd447"; // жёлтый
     for (let i = 0; i < n; i++) {
         const ev = momentumEvents[i];
         if (ev.type === "ace") {
@@ -606,20 +617,91 @@ function drawMomentumGraph() {
         }
     }
 
-    // draw dashed vertical lines at game boundaries
+    // ==== 4) Вертикальные пунктирные линии + счёт по геймам + Δмоментум ====
     ctx.save();
     ctx.setLineDash([4, 4]);
     ctx.strokeStyle = "rgba(255,255,255,0.25)";
     ctx.lineWidth = 1;
 
-    gameBoundaries.forEach(idx => {
-        if (idx <= 0 || idx >= n) return;
-        const x = idx * stepX;
+    let gamesA = 0;
+    let gamesB = 0;
+
+    ctx.font = "12px system-ui";
+    for (let gi = 0; gi < gameBoundaries.length; gi++) {
+        const boundary = gameBoundaries[gi];   // количество розыгрышей к концу гейма
+        if (boundary <= 0 || boundary > n) continue;
+
+        const lastIndex = boundary - 1;
+        const lastEv = momentumEvents[lastIndex];
+
+        // кто выиграл гейм
+        if (lastEv.winner === "A") gamesA++;
+        else if (lastEv.winner === "B") gamesB++;
+
+        // X-координата вертикальной линии (после последнего розыгрыша гейма)
+        const xLine = boundary * stepX;
+
+        // пунктир
         ctx.beginPath();
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, H);
+        ctx.moveTo(xLine, 0);
+        ctx.lineTo(xLine, H);
         ctx.stroke();
-    });
+
+        // счёт по геймам: A сверху, B снизу
+        ctx.fillStyle = "#ffffff";
+        ctx.textAlign = "center";
+        ctx.fillText(String(gamesA), xLine, 12);       // сверху
+        ctx.fillText(String(gamesB), xLine, H - 4);    // снизу
+
+        // подпись Δмоментума в конце гейма
+        const diff = lastEv.cumulative;
+        let label = "";
+        if (diff > 0) label = `+${diff}`;
+        else if (diff < 0) label = `${diff}`;
+        else label = "0";
+
+        const xLast = lastIndex * stepX;
+        const yLast = mid - lastEv.cumulative * scaleY;
+
+        ctx.fillStyle = "rgba(0,0,0,0.85)";
+        ctx.textAlign = "left";
+        ctx.fillText(label, xLast + 4, yLast - 4);
+    }
 
     ctx.restore();
+
+    // ==== 5) Один "теннисный мяч" на гейм (сервер) ====
+    // размещаем в середине каждого гейма
+    const ballRadius = 5;
+    const ballYTop = 20;
+    const ballYBottom = H - 20;
+
+    for (let gi = 0; gi < gameBoundaries.length; gi++) {
+        const boundary = gameBoundaries[gi];
+        const prevBoundary = gi === 0 ? 0 : gameBoundaries[gi - 1];
+
+        const startIndex = prevBoundary;      // включительно
+        const endIndex = boundary - 1;        // последний розыгрыш гейма
+
+        if (startIndex < 0 || endIndex < 0 || startIndex >= n || endIndex >= n) continue;
+
+        const midIndex = Math.floor((startIndex + endIndex) / 2);
+        const evMid = momentumEvents[midIndex];
+
+        const xBall = midIndex * stepX;
+        const yBall = evMid.server === "A" ? ballYTop : ballYBottom;
+
+        ctx.fillStyle = "#ffd447"; // жёлтый мяч
+        ctx.beginPath();
+        ctx.arc(xBall, yBall, ballRadius, 0, Math.PI * 2);
+        ctx.fill();
+
+        // лёгкая "текстура" мяча — полукруг
+        ctx.strokeStyle = "rgba(0,0,0,0.45)";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(xBall, yBall - 1, ballRadius - 2, Math.PI * 0.15, Math.PI * 1.1);
+        ctx.stroke();
+    }
 }
+
