@@ -334,6 +334,11 @@ function winGame(playerId) {
         winSet(playerId, "normal");
         return;
     }
+if (setIsOver) {
+    playerA.games = 0;
+    playerB.games = 0;
+    // start a new set
+}
 
     // next game: alternate server
     currentServer = otherPlayer(currentServer);
@@ -605,16 +610,26 @@ function drawMomentumGraph() {
         ctx.fill();
     }
 
-    // ==== 3) Метки Ace ("A" жёлтым) ====
-    ctx.font = "bold 12px system-ui";
-    ctx.fillStyle = "#ffd447"; // жёлтый
-    for (let i = 0; i < n; i++) {
-        const ev = momentumEvents[i];
-        if (ev.type === "ace") {
-            const x = i * stepX;
-            const y = mid - ev.cumulative * scaleY;
+       // ==== Ace labels ====
+ctx.font = "bold 12px system-ui";
+
+for (let i = 0; i < n; i++) {
+    const ev = momentumEvents[i];
+    if (ev.type === "ace") {
+        const x = i * stepX;
+        const y = mid - ev.cumulative * scaleY;
+
+        ctx.fillStyle = "#ffd447"; // yellow
+
+        if (ev.server === "A") {
+            // A served → label above
             ctx.fillText("A", x + 3, y - 6);
+        } else {
+            // B served → label below
+            ctx.fillText("A", x + 3, y + 14);
         }
+    }
+}
     }
 
     // ==== 4) Вертикальные пунктирные линии + счёт по геймам + Δмоментум ====
@@ -635,9 +650,20 @@ function drawMomentumGraph() {
         const lastEv = momentumEvents[lastIndex];
 
         // кто выиграл гейм
-        if (lastEv.winner === "A") gamesA++;
-        else if (lastEv.winner === "B") gamesB++;
-
+        if (lastEv.winner === "A") {
+    gamesA++;
+    if (gamesA === 6 && gamesB <= 4) {  // won the set
+        gamesA = 0;
+        gamesB = 0;
+    }
+}
+else {
+    gamesB++;
+    if (gamesB === 6 && gamesA <= 4) {
+        gamesA = 0;
+        gamesB = 0;
+    }
+}
         // X-координата вертикальной линии (после последнего розыгрыша гейма)
         const xLine = boundary * stepX;
 
