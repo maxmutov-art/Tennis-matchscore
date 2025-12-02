@@ -628,7 +628,6 @@ for (let i = 0; i < n; i++) {
             // B served → label below
             ctx.fillText("A", x + 3, y + 14);
         }
-    }
 }
     
 
