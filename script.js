@@ -663,9 +663,16 @@ function drawMomentumGraph() {
         const xLast = lastIndex * stepX;
         const yLast = mid - lastEv.cumulative * scaleY;
 
-        ctx.fillStyle = "rgba(0,0,0,0.85)";
-        ctx.textAlign = "left";
-        ctx.fillText(label, xLast + 4, yLast - 4);
+        ctx.save();
+ctx.font = "bold 13px system-ui";
+ctx.fillStyle = "#ffffff";             // visible on dark background
+ctx.strokeStyle = "#000000";           // black outline for visibility
+ctx.lineWidth = 3;
+
+ctx.strokeText(label, xLast + 4, yLast - 6);
+ctx.fillText(label, xLast + 4, yLast - 6);
+ctx.restore();
+
     }
 
     ctx.restore();
