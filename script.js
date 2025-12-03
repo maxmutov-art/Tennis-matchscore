@@ -578,7 +578,7 @@ function drawMomentumGraph() {
         Math.abs(Math.min(...values)),
         Math.abs(Math.max(...values))
     );
-    const scaleY = (H * 0.40) / maxAbs;
+    const scaleY = (H * 0.70) / maxAbs;
 
     // 1) momentum line (green/red)
     ctx.lineWidth = 2;
@@ -651,17 +651,16 @@ function drawMomentumGraph() {
         if (lastEv.winner === "A") gamesA++;
         else gamesB++;
 
-        // reset at set end (simple version: 6–x where x<=4, or 7–5)
-        if ((gamesA === 6 && gamesB <= 4) ||
-            (gamesB === 6 && gamesA <= 4)) {
-            gamesA = 0;
-            gamesB = 0;
-        }
-        if ((gamesA === 7 && gamesB === 5) ||
-            (gamesB === 7 && gamesA === 5)) {
-            gamesA = 0;
-            gamesB = 0;
-        }
+        const setEnded =
+   (gamesA >= 6 && gamesA - gamesB >= 2) ||
+   (gamesB >= 6 && gamesB - gamesA >= 2) ||
+   gamesA === 7 || gamesB === 7;
+
+if (setEnded) {
+   gamesA = 0;
+   gamesB = 0;
+}
+
 
         const xLine = boundary * stepX;
 
