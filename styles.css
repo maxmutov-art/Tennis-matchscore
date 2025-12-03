@@ -515,3 +515,17 @@ button.ghost {
     border-radius: 8px;
     border: 1px solid rgba(255,255,255,0.12);
 }
+.export-btn {
+    margin-top: 18px;
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #3cff6b, #1fa84b);
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.export-btn:hover {
+    filter: brightness(1.15);
+}
